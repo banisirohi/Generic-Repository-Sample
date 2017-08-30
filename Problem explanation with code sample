@@ -1,0 +1,137 @@
+IGEnericREpository code:
+
+namespace DLL_BF.BF_Repository
+{
+    public interface IGenericRepository<T> : IDisposable where T : class
+    {
+
+        IQueryable<T> GetAll();
+        IQueryable<T> FindBy(Expression<Func<T, bool>> predicate);
+        void Add(T entity);
+        void AddMany(List<T> entity);
+        void Delete(T entity);
+        void Edit(T entity);
+        void Save();
+    }
+}
+
+Generic Repository code:
+
+namespace DLL_BF.BF_Repository
+{
+    public abstract class GenericRepository<C, T> :
+        IGenericRepository<T> where T : class where C : DbContext, new()
+    {
+
+        private C _entities = new C();
+        protected C Context
+        {
+
+            get { return _entities; }
+            set { _entities = value; }
+        }
+
+        public virtual IQueryable<T> GetAll()
+        {
+
+            IQueryable<T> query = _entities.Set<T>();
+            return query;
+        }
+
+        public IQueryable<T> FindBy(System.Linq.Expressions.Expression<Func<T, bool>> predicate)
+        {
+
+            IQueryable<T> query = _entities.Set<T>().Where(predicate);
+            return query;
+        }
+
+        public virtual void Add(T entity)
+        {
+
+            _entities.Set<T>().Add(entity);
+        }
+        public virtual void AddMany(List<T> entities)
+        {
+            _entities.Set<T>().AddRange(entities);
+        }
+        public virtual void Delete(T entity)
+        {
+
+            _entities.Set<T>().Remove(entity);
+        }
+
+        public virtual void Edit(T entity)
+        {
+
+            _entities.Entry(entity).State = EntityState.Modified;
+        }
+
+        public virtual void Save()
+        {
+
+            _entities.SaveChanges();
+        }
+
+        private bool disposed = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+
+            if (!this.disposed)
+                if (disposing)
+                    _entities.Dispose();
+
+            this.disposed = true;
+        }
+
+        public void Dispose()
+        {
+
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+    }
+}
+
+
+
+Implementing generic repository in  linkRepository:
+
+namespace DLL_BF.BF_Repository
+{
+    public class LinkRepository :
+    GenericRepository<IntranetEntities, Link>, ILinkRepository
+    {
+        
+        public bool SaveLink(Link link)
+        {
+            Add(link);
+            Save();
+            var isSaved = link.GUID.HasValue ? true : false;
+            return isSaved;
+        }
+    }
+}
+
+I’m calling SaveLink like this:
+
+  public bool SaveBFLink(BFLink bflink)
+        {
+            Link link = new Link();
+            link.Title = bflink.Title;
+            link.URL = bflink.URL;
+            link.Description = bflink.Description;
+            link.GUID = Guid.NewGuid();
+            bool isSaved = false;
+            using (TransactionScope scope = new TransactionScope())
+            {
+                isSaved = _linkRepository.SaveLink(link);
+}
+return bool;
+
+}
+
+But IT’s not saving the new record in db. It doesn’t even throw any error.
+I have spent some good 6 hours debugging it but couldn’t resolve the issue.
+Can somebody please help me what am I doing wrong?

@@ -132,6 +132,11 @@ return bool;
 
 }
 
-But IT’s not saving the new record in db. It doesn’t even throw any error.
+I have attached 2 png file.
+    1. LinkValueCapture.PNG : shows value in link entity after Add(link) called inside SaveLink(Link link) method.
+    2. LinkEntityAfterSaveCalledCapture.PNG : shows value in link entity afterSave(); called inside SaveLink(Link link) method.
+    
+    ID gets updated in newly created link entity but it's not saved as new record in db. It doesn’t even throw any error.
+    
 I have spent some good 6 hours debugging it but couldn’t resolve the issue.
-Can somebody please help me what am I doing wrong?
+Can somebody please help me what am I doing wrong? I would really appreciate if you can suggest some valuable suggestion to get this work.
